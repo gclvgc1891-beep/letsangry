@@ -1,301 +1,78 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>怒りジェネレーター | Guchi → BOOM!</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>怒りジェネレーター | Kansai / なんJ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+JP:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#000000;            /* クラシックブラック */
+    --card:#0b0b0b;
+    --ink:#e7e7ec;           /* 文字色は現状キープ */
+    --muted:#9aa0aa;
+    --anger: 0;
 
-  <!-- 太字＆日本語向けの怒りフォント（ネット接続なしでも動くが、繋がれば更にゴツくなる） -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+JP:wght@700;900&display=swap" rel="stylesheet">
+    /* ボタン：静脈血ドス赤 */
+    --venous-1:#3c0000;
+    --venous-2:#5d0000;
+    --venous-3:#7a0000;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; min-height:100dvh; display:flex;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic UI","Segoe UI",system-ui,-apple-system,sans-serif;
+    background: var(--bg); color:var(--ink);
+  }
+  .wrap{width:min(980px,100%); margin:0 auto; padding:clamp(16px,3vw,28px); display:flex; flex-direction:column; gap:16px;}
+  header{display:flex; align-items:center; justify-content:space-between; gap:12px}
+  h1{
+    margin:0; font-family:"Anton","Noto Sans JP",system-ui,sans-serif; letter-spacing:.5px;
+    font-size:clamp(22px,5vw,34px); display:flex; align-items:center; gap:10px;
+    background: linear-gradient(180deg,#ffd1cc 0%, #ffa39b 35%, #ff4b41 70%, #a80b00 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 2px 14px rgba(255,69,58,.25);
+  }
+  .sub{color:var(--muted); font-size:12px}
+  .card{
+    background: linear-gradient(180deg, rgba(255,59,48,.04), transparent 35%) , var(--card);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:16px; padding:14px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.02);
+  }
+  .input-area{display:flex; flex-direction:column; gap:10px}
+  .hint{color:var(--muted); font-size:12px}
+  textarea{
+    width:100%; min-height:120px; max-height:45dvh; resize:vertical; padding:14px 12px;
+    border-radius:12px; border:1px solid rgba(255,255,255,.08);
+    background:#0f0f12; color:#fff; outline:none; font-size:16px; line-height:1.6;
+    transition:border .15s ease, box-shadow .15s ease;
+  }
+  textarea:focus{ border-color: rgba(122,0,0,.55); box-shadow: 0 0 0 6px rgba(122,0,0,.12); }
+  .row{display:flex; gap:10px; flex-wrap:wrap}
 
-  <style>
-    :root{
-      --bg:#0b0b0d;
-      --card:#141418;
-      --ink:#e7e7ec;
-      --muted:#9aa0aa;
-      --accent:#ff3b30;
-      --anger: 0; /* 0–100（JSで更新） */
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic UI","Segoe UI",system-ui,-apple-system,sans-serif;
-      background: radial-gradient(1200px 600px at 70% -10%, #2a0a0a 0%, transparent 60%) , var(--bg);
-      color:var(--ink);
-      display:flex;
-      min-height:100dvh;
-    }
-    .wrap{
-      width:min(980px,100%);
-      margin:0 auto;
-      padding:clamp(16px,3vw,28px);
-      display:flex; flex-direction:column; gap:16px;
-    }
-    header{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-    }
-    h1{
-      margin:0;
-      font-family:"Anton","Noto Sans JP",system-ui,sans-serif;
-      letter-spacing:.5px;
-      font-size:clamp(22px,5vw,34px);
-      display:flex; align-items:center; gap:10px;
-      background: linear-gradient(180deg,#ffd1cc 0%, #ffa39b 35%, #ff4b41 70%, #a80b00 100%);
-      -webkit-background-clip:text; background-clip:text; color:transparent;
-      text-shadow:0 2px 14px rgba(255,69,58,.25);
-    }
-    header .sub{color:var(--muted); font-size:12px}
-    .card{
-      background: linear-gradient(180deg, rgba(255,59,48,.05), transparent 35%) , var(--card);
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:16px; padding:14px;
-      box-shadow: 0 12px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.02);
-    }
-    .input-area{display:flex; flex-direction:column; gap:10px}
-    .hint{color:var(--muted); font-size:12px}
-    textarea{
-      width:100%; min-height:120px; max-height:45dvh;
-      resize:vertical; padding:14px 12px;
-      border-radius:12px; border:1px solid rgba(255,255,255,.08);
-      background:#0f0f12; color:#fff; outline:none;
-      font-size:16px; line-height:1.6;
-      transition:border .15s ease, box-shadow .15s ease;
-    }
-    textarea:focus{
-      border-color: rgba(255,59,48,.45);
-      box-shadow: 0 0 0 6px rgba(255,59,48,.08);
-    }
-    .row{display:flex; gap:10px; flex-wrap:wrap}
-    button{
-      appearance:none; border:none; cursor:pointer; user-select:none;
-      padding:12px 16px; border-radius:12px; font-weight:700;
-      background:#1a1a1f; color:#fff; transition:transform .03s ease, opacity .2s ease, box-shadow .2s ease;
-      box-shadow: 0 6px 20px rgba(0,0,0,.4);
-    }
-    button:active{transform:translateY(1px)}
-    .primary{
-      background:linear-gradient(180deg,#ff736b,#ff3b30);
-      text-shadow:0 1px 0 rgba(0,0,0,.25);
-      box-shadow: 0 10px 26px rgba(255,59,48,.35);
-    }
-    .ghost{background:#16161a; color:#ddd}
-    .muted{background:#111115; color:#bbb}
-    .grow{flex:1}
-    .meter{
-      position:relative; height:12px; border-radius:999px; overflow:hidden; background:#0f0f12; border:1px solid rgba(255,255,255,.06);
-    }
-    .meter>span{
-      position:absolute; inset:0 auto 0 0; width:calc(var(--anger)*1%); border-radius:inherit;
-      background: linear-gradient(90deg, #ffc400, #ff6a00 40%, #ff3b30 70%, #ff0033 100%);
-      box-shadow: 0 0 18px rgba(255,59,48,.45);
-      transition:width .25s ease;
-    }
-    .labels{display:flex; justify-content:space-between; font-size:11px; color:var(--muted)}
-    .outputs{display:grid; grid-template-columns:1fr; gap:12px}
-    @media (min-width:720px){ .outputs{grid-template-columns:1fr 1fr} }
+  button{
+    appearance:none; border:none; cursor:pointer; user-select:none; padding:12px 16px;
+    border-radius:12px; font-weight:700; color:#fff;
+    transition:transform .03s ease, opacity .2s ease, box-shadow .2s ease;
+    box-shadow: 0 8px 26px rgba(122,0,0,.25);
+  }
+  button:active{transform:translateY(1px)}
+  .primary{
+    background:linear-gradient(180deg,var(--venous-2),var(--venous-3));
+    border:1px solid rgba(255,255,255,.06);
+    text-shadow:0 1px 0 rgba(0,0,0,.25);
+  }
+  .ghost{background:linear-gradient(180deg,#111,#0d0d0d); color:#ddd; border:1px solid rgba(255,255,255,.06)}
+  .muted{background:#0c0c0e; color:#bbb; border:1px solid rgba(255,255,255,.06)}
+  .grow{flex:1}
 
-    /* 怒り表示 */
-    .angry-block{
-      min-height:140px; display:flex; align-items:center; justify-content:center;
-      border-radius:14px; padding:16px; text-align:center;
-      background:
-        radial-gradient(240px 90px at 10% -20%, rgba(255,255,255,.06), transparent 60%),
-        radial-gradient(320px 120px at 110% 120%, rgba(255,59,48,.08), transparent 60%),
-        #0e0e12;
-      border:1px solid rgba(255,255,255,.06);
-      position:relative; overflow:hidden;
-    }
-    .angry-text{
-      font-family:"Anton","Noto Sans JP",system-ui,sans-serif;
-      font-weight:900;
-      font-size:clamp(22px, calc(18px + var(--anger)*.25px), 48px);
-      line-height:1.15;
-      letter-spacing:.5px;
-      background: linear-gradient(180deg, #fff2f2 0%, #ffd1cc 25%, #ff8a80 45%, #ff3b30 65%, #7a0000 100%);
-      -webkit-background-clip:text; background-clip:text; color:transparent;
-      -webkit-text-stroke: calc(var(--anger)/100*1.5px) rgba(0,0,0,.8);
-      text-shadow:
-        0 0 calc(var(--anger)/100*18px) rgba(255,59,48,.45),
-        0 2px 12px rgba(0,0,0,.6);
-      animation: boil 2.2s ease-in-out infinite;
-    }
-    .angry-text[data-shake="1"]{ animation: boil 2.2s ease-in-out infinite, shake .2s linear infinite; }
-    @keyframes boil{
-      0%,100%{ filter: drop-shadow(0 0 0 rgba(255,80,80,.0)) }
-      50%{ filter: drop-shadow(0 0 18px rgba(255,80,80,.35)) }
-    }
-    @keyframes shake{
-      0%{ transform: translate(0,0) rotate(0deg) }
-      25%{ transform: translate(1px,0.5px) rotate(.2deg) }
-      50%{ transform: translate(-1px,-0.5px) rotate(-.2deg) }
-      75%{ transform: translate(0.5px,-1px) rotate(.15deg) }
-      100%{ transform: translate(0,0) rotate(0deg) }
-    }
-
-    /* スクショモード（UIを隠して出力だけ全面表示） */
-    .screenshot .controls, .screenshot header, .screenshot .meter-wrap{ display:none !important; }
-    .screenshot .outputs{ grid-template-columns:1fr; }
-    .screenshot .angry-block{ min-height:48dvh; }
-
-    /* 低モーション設定に配慮 */
-    @media (prefers-reduced-motion: reduce){
-      .angry-text{ animation:none !important }
-      button{ transition:none }
-    }
-
-    footer{ color:var(--muted); font-size:12px; text-align:center; padding:4px 0 }
-    .tiny{font-size:11px; color:#8a8f99}
-  </style>
-</head>
-<body>
-  <main class="wrap">
-    <header>
-      <h1>怒りジェネレーター</h1>
-      <div class="sub">書いて、ぶちまけて、スッキリ。</div>
-    </header>
-
-    <section class="card input-area controls">
-      <label for="guchi" class="hint">▼ いまの気持ちをぶちまけてください（改行OK / Ctrl+Enter でも実行）</label>
-      <textarea id="guchi" placeholder="例）金土のピークタイムに『まだですか？』は草。混むに決まってるやろ…！"></textarea>
-      <div class="row">
-        <button class="primary" id="fire">ぶちまける</button>
-        <button class="ghost" id="clear">リセット</button>
-        <button class="muted grow" id="shot">スクショモード</button>
-      </div>
-      <div class="meter-wrap" style="display:flex; flex-direction:column; gap:6px; margin-top:6px">
-        <div class="labels"><span>怒りゲージ</span><span id="scoreLabel">0%</span></div>
-        <div class="meter"><span id="bar"></span></div>
-      </div>
-    </section>
-
-    <section class="outputs">
-      <div class="card angry-block">
-        <div id="you" class="angry-text" aria-live="polite">ここにあなたの愚痴がドーン！</div>
-      </div>
-      <div class="card angry-block">
-        <div id="bot" class="angry-text" aria-live="polite" data-shake="0">ここに相棒の返答がズドン！</div>
-      </div>
-    </section>
-
-    <footer>
-      <div>© 怒りジェネレーター <span class="tiny">（ローカルで完結・データ送信なし）</span></div>
-    </footer>
-  </main>
-
-  <script>
-    const el = {
-      ta: document.getElementById('guchi'),
-      fire: document.getElementById('fire'),
-      clear: document.getElementById('clear'),
-      shot: document.getElementById('shot'),
-      you: document.getElementById('you'),
-      bot: document.getElementById('bot'),
-      bar: document.getElementById('bar'),
-      scoreLabel: document.getElementById('scoreLabel'),
-      root: document.documentElement,
-      body: document.body
-    };
-
-    // ざっくり怒りスコアを計算（0–100）
-    function computeAngerScore(text){
-      if(!text) return 0;
-      const len = Math.min(text.trim().length, 600); // 長文で上限
-      const bangs = (text.match(/[!！]+/g)||[]).join('').length;
-      const angryWords = [
-        'ムカ','イラ','最悪','無理','は?','は？','ふざけ','だる','遅','遅い','無能',
-        '不公平','クソ','馬鹿','バカ','死ね','しね','殺','最悪','ブチ','許せ','やば'
-      ];
-      let wordHits = 0;
-      angryWords.forEach(w=>{
-        const m = text.split(w).length-1;
-        wordHits += m;
-      });
-      const caps = (text.match(/[A-Z]{2,}/g)||[]).length; // 英大文字の連続
-      const q = (text.match(/[?？]{2,}/g)||[]).length;
-
-      // 係数調整
-      let score =
-        (len/6) + (bangs*6) + (wordHits*10) + (caps*8) + (q*4);
-
-      // ！での連打は強めに
-      if(bangs >= 3) score += 10;
-
-      // 最高100でクリップ
-      score = Math.max(0, Math.min(100, Math.round(score)));
-      return score;
-    }
-
-    function setAnger(score){
-      el.root.style.setProperty('--anger', score);
-      el.bar.style.width = score + '%';
-      el.scoreLabel.textContent = score + '%';
-
-      // 60%以上で震える
-      const shake = score >= 60 ? '1' : '0';
-      el.you.setAttribute('data-shake', shake);
-      el.bot.setAttribute('data-shake', shake);
-    }
-
-    function chunkToSpans(txt){
-      // 日本語は大文字変換しない。1–2文字ずつspanで煮立たせる
-      const parts = txt.split('');
-      return parts.map((ch,i)=>`<span style="display:inline-block; transform: translateY(${(i%3-1)*1}px) rotate(${(i%5-2)*0.2}deg)">${escapeHtml(ch)}</span>`).join('');
-    }
-
-    function escapeHtml(str){
-      return str.replace(/[&<>"']/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
-    }
-
-    function generateReply(text, score){
-      const short = text.trim().slice(0, 36) + (text.trim().length>36?'…':'');
-      if(score < 25){
-        return `うん、それは普通にモヤる。「${escapeHtml(short)}」は引く。君の感覚は正しい。`;
-      }else if(score < 50){
-        return `それ、キレていい案件。まず深呼吸→水一口→要点だけ伝えて撤退。相手の未熟さのツケを払う義務はない。`;
-      }else if(score < 75){
-        return `わかる。理不尽はゴミ箱行き。事実と感情を分けて整理しつつ、君の時間を奪わせない。睡眠と栄養を先に確保！`;
-      }else{
-        return `よし、これは完全にレッドゾーン。君は悪くない。境界線をバシッと引いて「今はNO」。スマホ閉じて、水→歩く→風呂。回復が最優先！`;
-      }
-    }
-
-    function render(){
-      const text = el.ta.value.trim();
-      const score = computeAngerScore(text);
-      setAnger(score);
-
-      const guchi = text || '（…腹の底のモヤモヤを書いてみよう…）';
-      el.you.innerHTML = chunkToSpans(guchi);
-
-      const reply = generateReply(guchi, score);
-      el.bot.innerHTML = chunkToSpans(reply);
-    }
-
-    // 使い勝手
-    el.fire.addEventListener('click', render);
-    el.clear.addEventListener('click', ()=>{
-      el.ta.value = '';
-      render();
-      el.ta.focus();
-    });
-    el.shot.addEventListener('click', ()=>{
-      document.body.classList.toggle('screenshot');
-      el.shot.textContent = document.body.classList.contains('screenshot') ? '通常モード' : 'スクショモード';
-    });
-    el.ta.addEventListener('input', ()=>{
-      // 入力中もゲージを動かす
-      const s = computeAngerScore(el.ta.value);
-      setAnger(s);
-    });
-    el.ta.addEventListener('keydown', (e)=>{
-      if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){ render(); }
-    });
-
-    // 初期表示
-    setAnger(0);
-  </script>
-</body>
-</html>
+  .meter{position:relative; height:12px; border-radius:999px; overflow:hidden; background:#0f0f12; border:1px solid rgba(255,255,255,.06);}
+  .meter>span{
+    position:absolute; inset:0 auto 0 0; width:calc(var(--anger)*1%); border-radius:inherit;
+    background: linear-gradient(90deg, #ffc400, #ff6a00 40%, #ff3b30 70%, #ff0033 100%);
+    box-shadow: 0 0 18px rgba(255,59,48,.35); transition:width .25s ease;
+  }
+  .labels{display:flex; justify-content:space-between; font-
