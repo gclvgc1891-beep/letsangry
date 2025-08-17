@@ -75,4 +75,296 @@
     background: linear-gradient(90deg, #ffc400, #ff6a00 40%, #ff3b30 70%, #ff0033 100%);
     box-shadow: 0 0 18px rgba(255,59,48,.35); transition:width .25s ease;
   }
-  .labels{display:flex; justify-content:space-between; font-
+  .labels{display:flex; justify-content:space-between; font-size:11px; color:var(--muted)}
+  .outputs{display:grid; grid-template-columns:1fr; gap:12px}
+  @media (min-width:720px){ .outputs{grid-template-columns:1fr 1fr} }
+
+  .angry-block{
+    min-height:140px; display:flex; align-items:center; justify-content:center;
+    border-radius:14px; padding:16px; text-align:center;
+    background: radial-gradient(280px 120px at 110% 120%, rgba(255,59,48,.06), transparent 60%), #0e0e12;
+    border:1px solid rgba(255,255,255,.06);
+    position:relative; overflow:hidden;
+  }
+  .angry-text{
+    font-family:"Anton","Noto Sans JP",system-ui,sans-serif;
+    font-weight:900;
+    font-size:clamp(22px, calc(18px + var(--anger)*.25px), 48px);
+    line-height:1.15; letter-spacing:.5px;
+    background: linear-gradient(180deg, #fff2f2 0%, #ffd1cc 25%, #ff8a80 45%, #ff3b30 65%, #7a0000 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    -webkit-text-stroke: calc(var(--anger)/100*1.5px) rgba(0,0,0,.8);
+    text-shadow: 0 0 calc(var(--anger)/100*18px) rgba(255,59,48,.45), 0 2px 12px rgba(0,0,0,.6);
+    animation: boil 2.2s ease-in-out infinite;
+  }
+  .angry-text[data-shake="1"]{ animation: boil 2.2s ease-in-out infinite, shake .2s linear infinite; }
+  @keyframes boil{ 0%,100%{filter: drop-shadow(0 0 0 rgba(255,80,80,.0))} 50%{filter: drop-shadow(0 0 18px rgba(255,80,80,.35))} }
+  @keyframes shake{
+    0%{ transform: translate(0,0) rotate(0deg) }
+    25%{ transform: translate(1px,0.5px) rotate(.2deg) }
+    50%{ transform: translate(-1px,-0.5px) rotate(-.2deg) }
+    75%{ transform: translate(0.5px,-1px) rotate(.15deg) }
+    100%{ transform: translate(0,0) rotate(0deg) }
+  }
+
+  .screenshot .controls, .screenshot header, .screenshot .meter-wrap{ display:none !important; }
+  .screenshot .outputs{ grid-template-columns:1fr; }
+  .screenshot .angry-block{ min-height:48dvh; }
+
+  @media (prefers-reduced-motion: reduce){
+    .angry-text{ animation:none !important }
+    button{ transition:none }
+  }
+
+  footer{ color:var(--muted); font-size:12px; text-align:center; padding:4px 0 }
+
+  .toolbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .chip, select{
+    padding:8px 10px; border-radius:999px; background:#121212; border:1px solid rgba(255,255,255,.08);
+    font-size:12px; color:#ddd;
+  }
+  .chip input{vertical-align:middle; margin-right:6px}
+  select{appearance:none}
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div>
+        <h1>怒りジェネレーター</h1>
+        <div class="sub">関西弁 / なんJ風でズドン。</div>
+      </div>
+      <div class="toolbar">
+        <label class="chip"><input type="checkbox" id="sound" checked>銅鑼サウンドON</label>
+        <label class="chip">返答スタイル：
+          <select id="style">
+            <option value="random">ランダム</option>
+            <option value="kansai">関西弁</option>
+            <option value="nanj">なんJ風</option>
+          </select>
+        </label>
+        <button class="chip" id="shot">スクショモード</button>
+      </div>
+    </header>
+
+    <section class="card input-area controls">
+      <label for="guchi" class="hint">▼ いまの気持ちをぶちまけてください（改行OK / Ctrl+Enter でも実行）</label>
+      <textarea id="guchi" placeholder="例）金土のピークタイムに『まだですか？』は草。混むに決まってるやろ…！"></textarea>
+      <div class="row">
+        <button class="primary" id="fire">ぶちまける</button>
+        <button class="ghost" id="clear">リセット</button>
+        <button class="muted grow" id="help">ヘルプ</button>
+      </div>
+      <div class="meter-wrap" style="display:flex; flex-direction:column; gap:6px; margin-top:6px">
+        <div class="labels"><span>怒りゲージ</span><span id="scoreLabel">0%</span></div>
+        <div class="meter"><span id="bar"></span></div>
+      </div>
+    </section>
+
+    <section class="outputs">
+      <div class="card angry-block">
+        <div id="you" class="angry-text" aria-live="polite">ここにあなたの愚痴がドーン！</div>
+      </div>
+      <div class="card angry-block">
+        <div id="bot" class="angry-text" aria-live="polite" data-shake="0">ここに相棒の返答がズドン！</div>
+      </div>
+    </section>
+
+    <footer>
+      <div>© 怒りジェネレーター <span style="font-size:11px; color:#8a8f99">（ローカルで完結・外部送信なし）</span></div>
+    </footer>
+  </main>
+
+  <!-- かんたんヘルプ -->
+  <dialog id="modal" class="card" style="max-width:720px;">
+    <h3 style="margin-top:0">使い方</h3>
+    <ul style="line-height:1.7; color:#ddd; padding-left:18px;">
+      <li>入力して「ぶちまける」 or <kbd>Ctrl</kbd>+<kbd>Enter</kbd> → 左が愚痴・右が返答。</li>
+      <li>60%超で文字がブルブル。スクショモードでUIを隠して全画面表示。</li>
+      <li>返答は「関西弁 / なんJ風 / ランダム」から選択可。</li>
+      <li>送信時に**銅鑼**が鳴る（ON/OFF切替可）。</li>
+    </ul>
+    <div style="display:flex; justify-content:flex-end; gap:8px;"><button id="close" class="ghost">閉じる</button></div>
+  </dialog>
+
+<script>
+  const el = {
+    ta: document.getElementById('guchi'),
+    fire: document.getElementById('fire'),
+    clear: document.getElementById('clear'),
+    shot: document.getElementById('shot'),
+    help: document.getElementById('help'),
+    modal: document.getElementById('modal'),
+    close: document.getElementById('close'),
+
+    you: document.getElementById('you'),
+    bot: document.getElementById('bot'),
+    bar: document.getElementById('bar'),
+    scoreLabel: document.getElementById('scoreLabel'),
+
+    sound: document.getElementById('sound'),
+    style: document.getElementById('style'),
+    root: document.documentElement,
+    body: document.body
+  };
+
+  // ---- 音：送信と同時に鳴る銅鑼（低音強め） ----
+  let actx = null;
+  function ensureAudioCtx(){
+    if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if(actx.state === 'suspended') actx.resume();
+    return actx;
+  }
+  function playGong(){
+    if(!el.sound.checked) return;
+    const ac = ensureAudioCtx();
+    const now = ac.currentTime;
+
+    // 低音の胴鳴り（sine→frequency落ち）
+    const bass = ac.createOscillator();
+    const bassGain = ac.createGain();
+    bass.type = 'sine';
+    bass.frequency.setValueAtTime(110, now);           // A2
+    bass.frequency.exponentialRampToValueAtTime(70, now + 1.2);
+    bassGain.gain.setValueAtTime(0.001, now);
+    bassGain.gain.exponentialRampToValueAtTime(0.8, now + 0.03);
+    bassGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
+    bass.connect(bassGain).connect(ac.destination);
+    bass.start(now); bass.stop(now + 1.6);
+
+    // 金属の倍音（複数の共鳴モード）
+    const modes = [220, 330, 510, 740, 1180]; // 適当なゴング比
+    modes.forEach((f,i)=>{
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(f, now);
+      // ほんの少しのディチューンで金属感
+      o.detune.value = (Math.random()*2-1) * 10;
+      const dur = 0.8 + i*0.2;
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(0.35 - i*0.04, now + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      // 軽くローパスで耳当たりを整える
+      const lp = ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value = 4000 - i*300;
+      o.connect(lp).connect(g).connect(ac.destination);
+      o.start(now); o.stop(now + dur+0.05);
+    });
+
+    // アタック：ノイズを帯域通して一瞬
+    const bufferSize = Math.floor(0.15 * ac.sampleRate);
+    const buffer = ac.createBuffer(1, bufferSize, ac.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<bufferSize;i++){ data[i] = (Math.random()*2-1) * (1 - i/bufferSize); }
+    const noise = ac.createBufferSource(); noise.buffer = buffer;
+    const bp = ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1000; bp.Q.value=2.0;
+    const ng = ac.createGain();
+    ng.gain.setValueAtTime(0.0001, now);
+    ng.gain.exponentialRampToValueAtTime(0.5, now + 0.005);
+    ng.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+    noise.connect(bp).connect(ng).connect(ac.destination);
+    noise.start(now); noise.stop(now + 0.2);
+  }
+
+  // ---- 怒りスコア（0–100） ----
+  function computeAngerScore(text){
+    if(!text) return 0;
+    const len = Math.min(text.trim().length, 600);
+    const bangs = (text.match(/[!！]+/g)||[]).join('').length;
+    const angryWords = ['ムカ','イラ','最悪','無理','は?','は？','ふざけ','だる','遅','遅い','無能','不公平','クソ','馬鹿','バカ','死ね','しね','殺','ブチ','許せ','やば'];
+    let hits = 0; angryWords.forEach(w=>{ hits += (text.split(w).length-1); });
+    const caps = (text.match(/[A-Z]{2,}/g)||[]).length;
+    const q = (text.match(/[?？]{2,}/g)||[]).length;
+
+    let score = (len/6) + (bangs*6) + (hits*10) + (caps*8) + (q*4);
+    if(bangs >= 3) score += 10;
+    return Math.max(0, Math.min(100, Math.round(score)));
+  }
+
+  function setAnger(score){
+    el.root.style.setProperty('--anger', score);
+    el.bar.style.width = score + '%';
+    el.scoreLabel.textContent = score + '%';
+    const shake = score >= 60 ? '1' : '0';
+    el.you.setAttribute('data-shake', shake);
+    el.bot.setAttribute('data-shake', shake);
+    if(score >= 60 && navigator.vibrate){ navigator.vibrate([40, 30, 40]); }
+  }
+
+  // ---- 表示＆返答 ----
+  function chunkToSpans(txt){
+    const parts = txt.split('');
+    return parts.map((ch,i)=>`<span style="display:inline-block; transform: translateY(${(i%3-1)*1}px) rotate(${(i%5-2)*0.2}deg)">${escapeHtml(ch)}</span>`).join('');
+  }
+  function escapeHtml(str){ return str.replace(/[&<>"']/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s])); }
+
+  function pickStyle(){
+    const v = el.style.value;
+    if(v === 'random'){ return Math.random() < 0.5 ? 'kansai' : 'nanj'; }
+    return v;
+  }
+
+  function replyKansai(t, score){
+    const short = t.slice(0, 36) + (t.length>36?'…':'');
+    if(score < 25){
+      return `せやな、それ普通にモヤるわ。「${escapeHtml(short)}」は引くで。あんたの感覚、合うてる。`;
+    }else if(score < 50){
+      return `それはキレてええ案件やで。深呼吸して水一口、要点だけスパッと言うて撤退しよ。相手の未熟さの尻拭いはせんでええ。`;
+    }else if(score < 75){
+      return `わかるで。理不尽はごみ箱行きや。事実と感情わけて、時間は奪わせん。まず寝て食べて整えよ。`;
+    }else{
+      return `完全レッドゾーンや。あんた悪ない。境界線ビシッと「今はアカン」。スマホ閉じて水→ちょい歩き→風呂、これで回復や。`;
+    }
+  }
+
+  function replyNanj(t, score){
+    const short = t.slice(0, 36) + (t.length>36?'…':'');
+    if(score < 25){
+      return `それ普通にモヤるやつやんけ。「${escapeHtml(short)}」は草やなくて引くわ。ワイは味方やで。`;
+    }else if(score < 50){
+      return `キレ案件やろこれ。深呼吸→水ゴクー→要点だけ投下して離脱、が正解や。無能のツケは払わんでええんだよなぁ。`;
+    }else if(score < 75){
+      return `理不尽ポイーで。事実と感情分離しとけ。時間泥棒はNG。まず寝てメシ、ほな勝てるで。`;
+    }else{
+      return `レッドゾーン突入や！君は悪くない。境界線ガッツリ引いて「NO」や。端末閉じて水飲んで散歩→風呂、これでリセットや！`;
+    }
+  }
+
+  function generateReply(text, score){
+    const t = text.trim();
+    const mode = pickStyle();
+    return mode === 'kansai' ? replyKansai(t, score) : replyNanj(t, score);
+  }
+
+  function render({playSound=false} = {}){
+    const text = el.ta.value.trim();
+    const score = computeAngerScore(text);
+    setAnger(score);
+
+    const guchi = text || '（…腹の底のモヤモヤを書いてみよう…）';
+    el.you.innerHTML = chunkToSpans(guchi);
+
+    const reply = generateReply(guchi, score);
+    el.bot.innerHTML = chunkToSpans(reply);
+
+    if(playSound){ playGong(); }
+  }
+
+  // ---- UIイベント ----
+  el.fire.addEventListener('click', ()=>render({playSound:true}));
+  el.clear.addEventListener('click', ()=>{ el.ta.value = ''; render({playSound:false}); el.ta.focus(); });
+  el.shot.addEventListener('click', ()=>{
+    document.body.classList.toggle('screenshot');
+    el.shot.textContent = document.body.classList.contains('screenshot') ? '通常モード' : 'スクショモード';
+  });
+  el.ta.addEventListener('input', ()=>{ setAnger(computeAngerScore(el.ta.value)); });
+  el.ta.addEventListener('keydown', (e)=>{ if((e.ctrlKey||e.metaKey) && e.key==='Enter'){ render({playSound:true}); } });
+
+  el.help.addEventListener('click', ()=> el.modal.showModal());
+  el.close?.addEventListener('click', ()=> el.modal.close());
+
+  // 初期描画
+  render({playSound:false});
+</script>
+</body>
+</html>
