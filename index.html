@@ -306,8 +306,6 @@
   function replyKansai(t, score){
     const short = t.slice(0, 36) + (t.length>36?'…':'');
     if(score < 25){
-      return `せやな、それ普通にモヤるわ。「${escapeHtml(short)}」は引くで。あんたの感覚、合うてる。`;
-    }else if(score < 50){
       return `それはキレてええ案件やで。深呼吸して水一口、要点だけスパッと言うて撤退しよ。相手の未熟さの尻拭いはせんでええ。`;
     }else if(score < 75){
       return `わかるで。理不尽はごみ箱行きや。事実と感情わけて、時間は奪わせん。まず寝て食べて整えよ。`;
@@ -368,3 +366,4 @@
 </body>
 
 </html>
+
